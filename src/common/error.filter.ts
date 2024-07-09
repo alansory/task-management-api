@@ -16,8 +16,14 @@ export class ErrorFilter implements ExceptionFilter {
         errors: exception.getResponse(),
       });
     } else if (exception instanceof ZodError) {
+      // Extract detailed error messages from the ZodError object
+      const errorDetails = exception.errors.map(error => ({
+        path: error.path,
+        message: error.message,
+      }));
       response.status(400).json({
-        errors: 'Validation error',
+        message: 'Validation error',
+        errors: errorDetails,
       });
     } else {
       response.status(500).json({
