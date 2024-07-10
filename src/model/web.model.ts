@@ -1,6 +1,8 @@
-export class WebResponse<T> {
-  access_token?: string;
+export class WebResponse<T> {  
   data?: T;
+  status_code?: number;
+  message?: string;
+  access_token?: string;
   errors?: string;
   paging?: Paging;
 }

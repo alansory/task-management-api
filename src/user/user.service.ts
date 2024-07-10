@@ -23,12 +23,12 @@ export class UserService {
     private prismaService: PrismaService,
   ) {}
 
-  async register(request: RegisterUserRequest): Promise<UserResponse> {
+  async register(request: RegisterUserRequest): Promise<WebResponse<UserResponse>> {
     this.logger.debug(`UserService.register(${JSON.stringify(request)})`);
     const registerRequest: RegisterUserRequest =
       this.validationService.validate(UserValidation.REGISTER, request);
 
-    const existingUser = await this.prismaService.user.findUnique({
+    const existingUser = await this.prismaService.user.findFirst({
       where: {
         email: registerRequest.email,
       },
@@ -56,14 +56,14 @@ export class UserService {
     return this.mapToUserResponse(user);
   }
 
-  async login(request: LoginUserRequest): Promise<UserResponse> {
+  async login(request: LoginUserRequest):Promise<WebResponse<UserResponse>> {
     this.logger.debug(`UserService.login(${JSON.stringify(request)})`);
     const loginRequest: LoginUserRequest = this.validationService.validate(
       UserValidation.LOGIN,
       request,
     );
 
-    let user = await this.prismaService.user.findUnique({
+    let user = await this.prismaService.user.findFirst({
       where: {
         email: loginRequest.email,
       },
@@ -82,9 +82,9 @@ export class UserService {
   }
 
 
-  async update(user: User, request: UpdateUserRequest): Promise<UserResponse> {
+  async update(userId: number, user: User, request: UpdateUserRequest): Promise<WebResponse<UserResponse>> {
     this.logger.debug(
-      `UserService.update( ${JSON.stringify(user)} , ${JSON.stringify(request)} )`,
+      `UserService.update( ${userId}, ${JSON.stringify(user)} , ${JSON.stringify(request)} )`,
     );
 
     const updateRequest: UpdateUserRequest = this.validationService.validate(
@@ -102,7 +102,7 @@ export class UserService {
 
     const updateUser = await this.prismaService.user.update({
       where: {
-        email: user.email,
+        id: Number(userId),
       },
       data: {
         email: user.email,
@@ -115,6 +115,9 @@ export class UserService {
   }
 
   async list(request: SearchUserRequest): Promise<WebResponse<UserResponse[]>> {
+    this.logger.debug(
+      `UserService.list( ${JSON.stringify(request)} )`,
+    );
     const whereClause: any = {};
 
     if (request?.id) {
@@ -125,8 +128,8 @@ export class UserService {
       whereClause.email = request.email;
     }
 
-    const page = request.page ?? 1;
-    const perPage = request.per_page ?? 10;
+    const page = request.page ? Number(request.page) : 1;
+    const perPage = request.per_page ? Number(request.per_page) : 10;
     const skip = (page - 1) * perPage;
     
     const users = await this.prismaService.user.findMany({
@@ -139,24 +142,32 @@ export class UserService {
       where: whereClause,
     })
 
+    const result = users.map((user) => this.mapToUserResponse(user))
     return {
-      data: users.map((user) => this.mapToUserResponse(user)),
+      data: result.map((r) => r.data),
       paging: {
         current_page: page,
         per_page: perPage,
         total_page: Math.ceil(total / perPage),
         total: total,
       },
+      message: "OK",
+      status_code: 200,
     }
   }
 
-  private mapToUserResponse(user: User): UserResponse {
+  private mapToUserResponse(user: User) {
     return {
-      email: user.email,
-      name: user.name,
-      username: user.username,
-      created_at: user.createdAt,
-      updated_at: user.updatedAt,
+      data: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        username: user.username,
+        created_at: user.createdAt,
+        updated_at: user.updatedAt,
+      },
+      message: "OK",
+      status_code: 200  
     };
   }
 }

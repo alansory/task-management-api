@@ -4,12 +4,15 @@ import {
   Get,
   HttpCode,
   HttpStatus,
-  Patch,
-  Request
+  Put,
+  Query,
+  Request,
+  Param
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { WebResponse } from '../model/web.model';
 import {
+  SearchUserRequest,
   UpdateUserRequest,
   UserResponse,
 } from '../model/user.model';
@@ -19,23 +22,22 @@ export class UserController {
   constructor(private userService: UserService) {}
 
   @HttpCode(HttpStatus.OK)
-  @Patch('/current')
-  async update(
-    @Request() req,
-    @Body() request: UpdateUserRequest,
-  ): Promise<WebResponse<UserResponse>> {
-    const result = await this.userService.update(req.user, request);
-    return {
-      data: result,
-    };
+  @Get()
+  async list(
+    @Query() request:SearchUserRequest,
+  ): Promise<WebResponse<UserResponse[]>> {
+    const result = await this.userService.list(request);
+    return result
   }
 
   @HttpCode(HttpStatus.OK)
-  @Get()
-  async list(
-    @Request() req,
-  ): Promise<WebResponse<UserResponse[]>> {
-    const result = await this.userService.list(req);
+  @Put('/:id')
+  async update(
+    @Param('id') id: number,
+    @Request() request,
+    @Body() body: UpdateUserRequest,
+  ): Promise<WebResponse<UserResponse>> {
+    const result = await this.userService.update(id, request.user, body);
     return result
   }
 }

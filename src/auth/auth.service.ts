@@ -19,16 +19,12 @@ export class AuthService {
     const user = await this.userService.login(request);
     return {
       access_token: await this.jwtService.signAsync(user),
-      data: {
         ...user
-      }
     };
   }
 
   async register(request: RegisterUserRequest): Promise<WebResponse<UserResponse>> {
     const user = await this.userService.register(request);
-    return {
-      data: user
-    };
+    return user
   }
 }

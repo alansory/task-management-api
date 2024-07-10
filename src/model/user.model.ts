@@ -6,6 +6,7 @@ export class RegisterUserRequest {
 }
 
 export class UserResponse {
+  id: number
   name: string;
   email: string;
   username: string;
@@ -28,6 +29,6 @@ export class SearchUserRequest {
   name?: string;
   email?: string;
   username?: string;
-  page: number;
-  per_page: number;
+  page?: number;
+  per_page?: number;
 }
