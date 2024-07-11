@@ -9,7 +9,7 @@ CREATE TABLE `notifications` (
     `user_id` INTEGER NOT NULL,
     `task_id` INTEGER NULL,
     `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-    `readAt` DATETIME(3) NULL,
+    `read_at` DATETIME(3) NULL,
 
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;

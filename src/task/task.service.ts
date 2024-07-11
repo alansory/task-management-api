@@ -8,6 +8,7 @@ import { Task, User } from '@prisma/client';
 import { WebResponse } from '../model/web.model';
 import { TaskRequest } from 'src/model/task.model';
 import { TaskResponse } from 'src/model/task.model';
+import { TaskStatus } from '@prisma/client';
 
 @Injectable()
 export class TaskService {
@@ -26,7 +27,9 @@ export class TaskService {
     }
 
     if (params?.title) {
-      whereClause.title = params.title;
+      whereClause.title = {
+        contains: params.title
+      };
     }
 
     if (params?.description) {
@@ -49,6 +52,9 @@ export class TaskService {
       where: whereClause,
       take: perPage,
       skip: skip,
+      orderBy: {
+        created_at: 'desc'
+      }
     });
 
     const total = await this.prismaService.task.count({
@@ -86,14 +92,22 @@ export class TaskService {
     const createRequest: TaskRequest =
       this.validationService.validate(TaskValidation.CREATE, request);
 
+    const assigneeId = request.assignee_id ? Number(request.assignee_id) : null;
     const taskCreateInput = {
       title: createRequest.title,
-      description: createRequest.description || null,
+      description: request.description || null,
+      due_date: request.due_date ? new Date(request.due_date).toISOString() : null,
+      status: request.status ? (Object.values(TaskStatus).includes(request.status as TaskStatus) ? request.status : TaskStatus.TO_DO) : TaskStatus.TO_DO,
       creator: {
         connect: {
           id: user.id,
         },
       },
+      assignee: assigneeId ? {
+        connect: {
+          id: assigneeId,
+        },
+      } : undefined
     };
 
     const task = await this.prismaService.task.create({
@@ -109,14 +123,17 @@ export class TaskService {
     const createRequest: TaskRequest =
       this.validationService.validate(TaskValidation.CREATE, request);
 
+    const assigneeId = request.assignee_id ? Number(request.assignee_id) : null;
     const taskCreateInput = {
       title: createRequest.title,
-      description: createRequest.description || null,
-      creator: {
+      description: request.description || null,
+      due_date: request.due_date ? new Date(request.due_date).toISOString() : null,
+      status: request.status ? (Object.values(TaskStatus).includes(request.status as TaskStatus) ? request.status : TaskStatus.TO_DO) : TaskStatus.TO_DO,
+      assignee: assigneeId ? {
         connect: {
-          id: user.id,
+          id: assigneeId,
         },
-      },
+      } : undefined,
     };
 
     const task = await this.prismaService.task.update({
@@ -132,11 +149,26 @@ export class TaskService {
     this.logger.debug(
       `TaskService.delete( ${JSON.stringify(taskId)} )`,
     );
-    const task = await this.prismaService.task.delete({
+
+    const task = await this.prismaService.task.findUnique({
       where: {
         id: taskId,
       },
     });
+    
+    await this.prismaService.$transaction([
+      this.prismaService.comment.deleteMany({
+        where: {
+          task_id: taskId,
+        },
+      }),
+
+      this.prismaService.task.delete({
+        where: {
+          id: taskId,
+        },
+      }),
+    ]);
 
     return this.mapToTaskResponse(task)
   }
@@ -147,12 +179,12 @@ export class TaskService {
         id: task.id,         
         title: task.title,      
         description: task.description,
-        creator_id: task.creatorId,  
-        assignee_id: task.assigneeId,
+        creator_id: task.creator_id,  
+        assignee_id: task.assignee_id,
         status: task.status,     
-        due_date: task.dueDate,     
-        created_at: task.createdAt,  
-        updated_at: task.updatedAt,
+        due_date: task.due_date,     
+        created_at: task.created_at,  
+        updated_at: task.updated_at,
       },
       message: "OK",
       status_code: 200  

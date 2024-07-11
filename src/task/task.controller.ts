@@ -44,7 +44,8 @@ export class TaskController {
     @Request() req,
     @Body() body: TaskRequest,
   ): Promise<WebResponse<TaskResponse>> {
-    const result = await this.taskService.create(req.user, body);
+    const user = req.user ? req.user.data : null
+    const result = await this.taskService.create(user, body);
     return result
   }
 
@@ -55,7 +56,8 @@ export class TaskController {
     @Request() req,
     @Body() body: TaskRequest,
   ): Promise<WebResponse<TaskResponse>> {
-    const result = await this.taskService.update(taskId, req.user, body);
+    const user = req.user ? req.user.data : null
+    const result = await this.taskService.update(taskId, user, body);
     return result
   }
 

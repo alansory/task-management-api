@@ -125,7 +125,9 @@ export class UserService {
     }
 
     if (request?.email) {
-      whereClause.email = request.email;
+      whereClause.email = {
+        contains: request.email
+      };
     }
 
     const page = request.page ? Number(request.page) : 1;
@@ -163,8 +165,8 @@ export class UserService {
         email: user.email,
         name: user.name,
         username: user.username,
-        created_at: user.createdAt,
-        updated_at: user.updatedAt,
+        created_at: user.created_at,
+        updated_at: user.updated_at,
       },
       message: "OK",
       status_code: 200  

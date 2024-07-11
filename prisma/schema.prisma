@@ -19,12 +19,12 @@ model User {
   name       String?  @db.VarChar(100)
   username   String   @db.VarChar(100)
   password   String   @db.VarChar(100)
-  createdAt  DateTime @default(now()) @map("created_at")
-  updatedAt  DateTime @updatedAt @map("updated_at")
+  created_at  DateTime @default(now()) @map("created_at")
+  updated_at  DateTime @updatedAt @map("updated_at")
   
-  userRoles  UserRole[] @relation("UserToUserRoles")
+  user_roles  UserRole[] @relation("UserToUserRoles")
   tasks       Task[]        @relation("CreatedTasks")
-  assignedTasks Task[]      @relation("AssignedTasks")
+  assigned_tasks Task[]      @relation("AssignedTasks")
   comments    Comment[]
   notifications Notification[]
 
@@ -35,41 +35,41 @@ model Role {
   id          Int        @id @default(autoincrement())
   name        String     @unique @db.VarChar(50)
   description String?    @db.VarChar(255)
-  createdAt   DateTime   @default(now()) @map("created_at")
-  updatedAt   DateTime   @updatedAt @map("updated_at")
+  created_at   DateTime   @default(now()) @map("created_at")
+  updated_at   DateTime   @updatedAt @map("updated_at")
 
-  userRoles   UserRole[] @relation("RoleToUserRoles")
+  user_roles   UserRole[] @relation("RoleToUserRoles")
 
   @@map("roles")
 }
 
 model UserRole {
   id        Int      @id @default(autoincrement())
-  userId    Int      @map("user_id")
-  roleId    Int      @map("role_id")
-  assignedAt DateTime @default(now()) @map("assigned_at")
+  user_id    Int      @map("user_id")
+  role_id    Int      @map("role_id")
+  assigned_at DateTime @default(now()) @map("assigned_at")
 
-  user      User     @relation(fields: [userId], references: [id], name: "UserToUserRoles", map: "user_roles_user_id_fkey")
-  role      Role     @relation(fields: [roleId], references: [id], name: "RoleToUserRoles", map: "user_roles_role_id_fkey")
+  user      User     @relation(fields: [user_id], references: [id], name: "UserToUserRoles", map: "user_roles_user_id_fkey")
+  role      Role     @relation(fields: [role_id], references: [id], name: "RoleToUserRoles", map: "user_roles_role_id_fkey")
 
 
   @@map("user_roles")
-  @@unique([userId, roleId])
+  @@unique([user_id, role_id])
 }
 
 model Task {
   id          Int       @id @default(autoincrement())
   title       String    @db.VarChar(100)
   description String?   @db.Text
-  creatorId   Int       @map("creator_id")
-  assigneeId  Int?      @map("assignee_id")
+  creator_id   Int       @map("creator_id")
+  assignee_id  Int?      @map("assignee_id")
   status      TaskStatus @default(TO_DO)
-  dueDate     DateTime?
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
+  due_date     DateTime? @map("due_date")
+  created_at   DateTime  @default(now()) @map("created_at")
+  updated_at   DateTime  @updatedAt @map("updated_at")
 
-  creator     User      @relation("CreatedTasks", fields: [creatorId], references: [id])
-  assignee    User?     @relation("AssignedTasks", fields: [assigneeId], references: [id])
+  creator     User      @relation("CreatedTasks", fields: [creator_id], references: [id])
+  assignee    User?     @relation("AssignedTasks", fields: [assignee_id], references: [id])
   comments    Comment[]
   notifications Notification[]
 
@@ -79,13 +79,13 @@ model Task {
 model Comment {
   id        Int       @id @default(autoincrement())
   content   String    @db.Text
-  userId    Int       @map("user_id")
-  taskId    Int       @map("task_id")
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime  @updatedAt @map("updated_at")
+  user_id    Int       @map("user_id")
+  task_id    Int       @map("task_id")
+  created_at DateTime  @default(now()) @map("created_at")
+  updated_at DateTime  @updatedAt @map("updated_at")
 
-  user      User      @relation(fields: [userId], references: [id])
-  task      Task      @relation(fields: [taskId], references: [id])
+  user      User      @relation(fields: [user_id], references: [id])
+  task      Task      @relation(fields: [task_id], references: [id])
 
   @@map("comments")
 }
@@ -94,13 +94,13 @@ model Notification {
   id        Int       @id @default(autoincrement())
   type      NotificationType
   message   String    @db.Text
-  userId    Int       @map("user_id")
-  taskId    Int?      @map("task_id")
-  createdAt DateTime  @default(now()) @map("created_at")
-  readAt    DateTime?
+  user_id    Int       @map("user_id")
+  task_id    Int?      @map("task_id")
+  created_at DateTime  @default(now()) @map("created_at")
+  read_at    DateTime?  @map("read_at")
 
-  user      User      @relation(fields: [userId], references: [id])
-  task      Task?     @relation(fields: [taskId], references: [id])
+  user      User      @relation(fields: [user_id], references: [id])
+  task      Task?     @relation(fields: [task_id], references: [id])
 
   @@map("notifications")
 }
