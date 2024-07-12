@@ -14,7 +14,7 @@ import {
 } from '@nestjs/common';
 import { TaskService } from './task.service';
 import { WebResponse } from '../model/web.model';
-import { TaskRequest, TaskResponse } from 'src/model/task.model';
+import { TaskRequest, TaskResponse } from '../model/task.model';
 
 @Controller('/tasks')
 export class TaskController {
@@ -44,7 +44,7 @@ export class TaskController {
     @Request() req,
     @Body() body: TaskRequest,
   ): Promise<WebResponse<TaskResponse>> {
-    const user = req.user ? req.user.data : null
+    const user = req.user
     const result = await this.taskService.create(user, body);
     return result
   }
@@ -56,7 +56,7 @@ export class TaskController {
     @Request() req,
     @Body() body: TaskRequest,
   ): Promise<WebResponse<TaskResponse>> {
-    const user = req.user ? req.user.data : null
+    const user = req.user
     const result = await this.taskService.update(taskId, user, body);
     return result
   }

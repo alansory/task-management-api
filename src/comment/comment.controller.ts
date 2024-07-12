@@ -14,7 +14,7 @@ import {
 } from '@nestjs/common';
 import { CommentService } from './comment.service';
 import { WebResponse } from '../model/web.model';
-import { CommentRequest, CommentResponse } from 'src/model/comment.model';
+import { CommentRequest, CommentResponse } from '../model/comment.model';
 
 @Controller('/comments')
 export class CommentController {
@@ -44,7 +44,7 @@ export class CommentController {
     @Request() req,
     @Body() body: CommentRequest,
   ): Promise<WebResponse<CommentResponse>> {
-    const user = req.user ? req.user.data : null
+    const user = req.user
     const result = await this.commentService.create(user, body);
     return result
   }
@@ -56,7 +56,7 @@ export class CommentController {
     @Request() req,
     @Body() body: CommentRequest,
   ): Promise<WebResponse<CommentResponse>> {
-    const user = req.user ? req.user.data : null
+    const user = req.user
     const result = await this.commentService.update(commentId, user, body);
     return result
   }

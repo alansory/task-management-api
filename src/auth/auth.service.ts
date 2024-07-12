@@ -21,7 +21,7 @@ export class AuthService {
   async signIn(request: LoginUserRequest): Promise<WebResponse<UserResponse>> {
     const user = await this.userService.login(request);
     return {
-      access_token: await this.jwtService.signAsync(user),
+      access_token: await this.jwtService.signAsync(user.data),
         ...user
     };
   }
