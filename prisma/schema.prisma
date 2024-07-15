@@ -69,7 +69,7 @@ model Task {
   updated_at   DateTime  @updatedAt @map("updated_at")
 
   creator     User      @relation("CreatedTasks", fields: [creator_id], references: [id])
-  assignee    User?     @relation("AssignedTasks", fields: [assignee_id], references: [id])
+  user    User?     @relation("AssignedTasks", fields: [assignee_id], references: [id])
   comments    Comment[]
   notifications Notification[]
 

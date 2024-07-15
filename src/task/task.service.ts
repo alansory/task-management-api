@@ -10,6 +10,11 @@ import { TaskRequest } from 'src/model/task.model';
 import { TaskResponse } from 'src/model/task.model';
 import { TaskStatus } from '@prisma/client';
 
+
+type TaskWithUser = Task & {
+  user: User;
+};
+
 @Injectable()
 export class TaskService {
   constructor(
@@ -52,6 +57,9 @@ export class TaskService {
       where: whereClause,
       take: perPage,
       skip: skip,
+      include: {
+        user: true
+      },
       orderBy: {
         created_at: 'desc'
       }
@@ -81,6 +89,9 @@ export class TaskService {
       where: {
         id: taskId,
       },
+      include: {
+        user: true
+      }
     });
     return this.mapToTaskResponse(task)
   }
@@ -103,7 +114,7 @@ export class TaskService {
           id: user.id,
         },
       },
-      assignee: assigneeId ? {
+      user: assigneeId ? {
         connect: {
           id: assigneeId,
         },
@@ -112,6 +123,9 @@ export class TaskService {
 
     const task = await this.prismaService.task.create({
       data: taskCreateInput,
+      include: {
+        user: true
+      }
     });
     return this.mapToTaskResponse(task)
   }
@@ -129,7 +143,7 @@ export class TaskService {
       description: request.description || null,
       due_date: request.due_date ? new Date(request.due_date).toISOString() : null,
       status: request.status ? (Object.values(TaskStatus).includes(request.status as TaskStatus) ? request.status : TaskStatus.TO_DO) : TaskStatus.TO_DO,
-      assignee: assigneeId ? {
+      user: assigneeId ? {
         connect: {
           id: assigneeId,
         },
@@ -141,6 +155,9 @@ export class TaskService {
         id: taskId,
       },
       data: taskCreateInput,
+      include: {
+        user: true
+      }
     });
     return this.mapToTaskResponse(task)
   }
@@ -154,6 +171,9 @@ export class TaskService {
       where: {
         id: taskId,
       },
+      include: {
+        user: true
+      }
     });
     
     await this.prismaService.$transaction([
@@ -166,14 +186,14 @@ export class TaskService {
       this.prismaService.task.delete({
         where: {
           id: taskId,
-        },
+        }
       }),
     ]);
 
     return this.mapToTaskResponse(task)
   }
 
-  private mapToTaskResponse(task: Task) {
+  private mapToTaskResponse(task: TaskWithUser) {
     return {
       data : {
         id: task.id,         
@@ -185,6 +205,11 @@ export class TaskService {
         due_date: task.due_date,     
         created_at: task.created_at,  
         updated_at: task.updated_at,
+        user: task.user ? {
+          id: task.user.id,
+          name: task.user.name,
+          email: task.user.email,
+        } : null,
       },
       message: "OK",
       status_code: 200  

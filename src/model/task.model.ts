@@ -14,6 +14,11 @@ export class TaskResponse {
   due_date: Date     
   created_at: Date  
   updated_at: Date   
+  user?: {
+    id: number;
+    name: string;
+    email: string;
+  };
 }
 
 export class TaskRequest {
